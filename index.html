@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Horizon — Backdoor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --purple-primary:#9c00ad;
+    --purple-dark:#4a0052;
+    --purple-secondary:#FDF1FF;
+    --purple-tertiary:#FDF9FD;
+    --purple-border:#e9d5ff;
+
+    --green:#206E4D;
+    --green-bg:#F7FFFC;
+    --green-tint:#EAF7F1;
+    --green-border:#bbecd4;
+    --red:#B11D15;
+    --red-bg:#F5DEDD;
+    --red-tint:#FEF6F5;
+    --red-border:#F5C6C3;
+    --amber:#D97706;
+    --amber-bg:#FEF3C7;
+    --amber-border:#fde68a;
+    --blue:#1d4ed8;
+    --blue-bg:#eff6ff;
+
+    --text-title:#111827;
+    --text-body:#374151;
+    --text-meta:#6b7280;
+    --grey-30:#C6C4CA;
+    --grey-40:#938F99;
+    --border:#e2e8f0;
+    --border-light:#f1f5f9;
+    --page-bg:#f8f9fa;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    font-size:12px;font-weight:500;color:var(--text-body);
+    background:var(--page-bg);
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  }
+  button{font-family:inherit}
+
+  /* ──── Top Nav ───────────────────────────────────────────────────────── */
+  .topnav{
+    position:sticky;top:0;z-index:50;
+    background:#fff;border-bottom:1px solid var(--border);
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    height:56px;display:flex;align-items:center;
+    padding:0 28px;
+  }
+  .topnav-left{display:flex;align-items:center;gap:10px;flex:1}
+  .brand-mark{
+    width:28px;height:28px;border-radius:8px;
+    background:linear-gradient(135deg,#9c00ad 0%,#4a0052 100%);
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;
+    box-shadow:0 1px 2px rgba(74,0,82,.3);letter-spacing:-.02em;
+  }
+  .brand-text{display:flex;flex-direction:column;line-height:1.1}
+  .brand-name{font-size:14px;font-weight:800;color:var(--text-title);letter-spacing:-.01em}
+  .brand-sub{font-size:10px;font-weight:600;color:var(--text-meta);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+  .topnav-right{display:flex;align-items:center;gap:10px}
+
+  .role-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);
+    padding:5px 11px;border-radius:8px;
+    font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.02em;
+    white-space:nowrap;cursor:default;
+  }
+  .role-chip i{font-size:13px}
+
+  .tools-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#fff;border:1px solid var(--border);
+    color:var(--text-body);font-family:inherit;
+    font-size:12px;font-weight:600;
+    padding:6px 12px;border-radius:8px;cursor:pointer;
+    transition:all .18s;
+  }
+  .tools-btn:hover{border-color:#94a3b8;color:var(--text-title)}
+  .tools-btn i{font-size:14px}
+  .tools-btn i.chev{font-size:14px;color:var(--text-meta);margin-left:1px}
+
+  .avatar{
+    width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(135deg,#9c00ad 0%,#4a0052 100%);
+    display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px;
+    letter-spacing:.02em;margin-left:4px;
+    border:0;padding:0;font-family:inherit;cursor:pointer;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .avatar:hover{transform:scale(1.06);box-shadow:0 0 0 3px var(--purple-secondary)}
+
+  /* ──── Buttons ───────────────────────────────────────────────────────── */
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    border-radius:8px;font-weight:700;cursor:pointer;
+    transition:background .18s,border-color .18s,color .18s,opacity .18s;
+    border:1px solid transparent;white-space:nowrap;
+  }
+  .btn-primary{background:var(--purple-primary);color:#fff;font-size:13px;padding:8px 16px}
+  .btn-primary:hover:not(:disabled){background:var(--purple-dark)}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-secondary{background:#fff;border-color:#cbd5e1;color:var(--text-body);font-size:13px;font-weight:600;padding:7px 14px}
+  .btn-secondary:hover:not(:disabled){background:#f8fafc;border-color:#94a3b8}
+  .btn-secondary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--purple-primary);font-size:12px;font-weight:600;padding:5px 10px;border-radius:6px}
+  .btn-ghost:hover:not(:disabled){background:var(--purple-secondary)}
+  .btn-sm{font-size:12px;padding:6px 12px}
+  .btn-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:32px;height:32px;background:#fff;border:1px solid var(--border);
+    border-radius:8px;cursor:pointer;color:var(--text-meta);
+    transition:all .15s;
+  }
+  .btn-icon:hover{border-color:#94a3b8;color:var(--text-title)}
+
+  /* ──── Main ──────────────────────────────────────────────────────────── */
+  main{max-width:1180px;margin:0 auto;padding:24px 28px 80px}
+
+  /* ──── Context strip ─────────────────────────────────────────────────── */
+  .context-strip{
+    display:flex;align-items:flex-start;gap:12px;
+    background:#fff;border:1px solid var(--border);
+    border-left:3px solid var(--amber);
+    border-radius:10px;padding:14px 18px;
+    margin-bottom:20px;
+  }
+  .context-strip i.lead{font-size:18px;color:var(--amber);margin-top:1px}
+  .context-strip .ctx-title{font-size:13px;font-weight:700;color:var(--text-title);margin-bottom:3px}
+  .context-strip .ctx-body{font-size:12px;color:var(--text-body);line-height:1.5}
+
+  /* ──── Templates popover ─────────────────────────────────────────────── */
+  .popover{
+    position:fixed;z-index:500;
+    background:#fff;border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 12px 32px rgba(0,0,0,.12);
+    width:320px;overflow:hidden;
+    animation:popIn .18s ease-out;
+  }
+  @keyframes popIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  .popover-head{padding:14px 16px 8px}
+  .popover-title{font-size:13px;font-weight:700;color:var(--text-title);letter-spacing:-.01em}
+  .popover-sub{font-size:11px;color:var(--text-meta);margin-top:2px;line-height:1.4}
+  .popover-all{
+    display:flex;align-items:center;gap:8px;
+    margin:8px 12px 4px;padding:9px 12px;
+    background:var(--purple-tertiary);border:1px solid var(--purple-border);
+    border-radius:8px;cursor:pointer;transition:background .15s;
+  }
+  .popover-all:hover{background:var(--purple-secondary)}
+  .popover-all i.lead{font-size:14px;color:var(--purple-primary)}
+  .popover-all-text{flex:1}
+  .popover-all-text strong{font-size:12px;font-weight:700;color:var(--purple-primary);display:block;letter-spacing:-.01em}
+  .popover-all-text span{font-size:10px;color:var(--text-meta);font-weight:500}
+  .popover-divider{height:1px;background:var(--border-light);margin:6px 0 4px}
+  .popover-list{padding:4px 6px 8px;max-height:280px;overflow-y:auto}
+  .popover-item{
+    display:flex;align-items:center;gap:8px;
+    padding:7px 10px;border-radius:6px;cursor:pointer;transition:background .15s;
+  }
+  .popover-item:hover{background:var(--page-bg)}
+  .popover-item-text{flex:1;min-width:0}
+  .popover-item-title{font-size:12px;font-weight:600;color:var(--text-title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .popover-item-meta{font-size:10px;color:var(--text-meta);font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+  .popover-item i.dl{font-size:14px;color:var(--grey-40);flex-shrink:0}
+  .popover-item:hover i.dl{color:var(--purple-primary)}
+
+  /* ──── Subsection ────────────────────────────────────────────────────── */
+  .subsection{margin-top:22px}
+  .subsection:first-of-type{margin-top:0}
+  .subsection-head{display:flex;align-items:center;gap:10px;padding:0 0 10px}
+  .subsection-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.09em;flex-shrink:0}
+  .subsection-divider{flex:1;height:1px;background:var(--border)}
+
+  /* ──── Card ──────────────────────────────────────────────────────────── */
+  .card{
+    background:#fff;border:1px solid var(--border);border-radius:10px;
+    box-shadow:0 1px 2px rgba(0,0,0,.02);overflow:hidden;
+    transition:background .2s,border-color .2s;margin-bottom:8px;
+  }
+  .card:hover{border-color:#cbd5e1}
+  .card.locked{background:#fafafa}
+  .card.pending{background:#fafafa;border-style:dashed}
+
+  .card-row{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 18px;min-height:56px;
+  }
+  .status-dot{
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+    box-shadow:0 0 0 3px transparent;transition:box-shadow .2s;
+  }
+  .status-dot.authorised{background:var(--green);box-shadow:0 0 0 3px var(--green-tint)}
+  .status-dot.locked{background:var(--grey-40);box-shadow:0 0 0 3px #e5e7eb}
+  .status-dot.pending{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg)}
+
+  .card-title-wrap{display:flex;align-items:center;gap:8px;min-width:0}
+  .card-title{font-size:13px;font-weight:700;color:var(--text-title);letter-spacing:-.01em}
+  .card-table-id{
+    font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    font-size:11px;font-weight:600;color:var(--text-meta);
+    background:var(--page-bg);border:1px solid var(--border);
+    padding:2px 7px;border-radius:5px;
+  }
+  .info-btn{
+    width:18px;height:18px;border-radius:50%;border:0;background:transparent;
+    color:var(--grey-40);cursor:pointer;display:grid;place-items:center;
+    transition:color .15s;
+  }
+  .info-btn:hover{color:var(--purple-primary)}
+  .info-btn i{font-size:14px}
+
+  .card-spacer{flex:1}
+
+  .card-meta{
+    display:flex;flex-direction:column;align-items:flex-end;gap:1px;
+    font-size:11px;color:var(--text-meta);text-align:right;
+  }
+  .card-meta .meta-line{font-weight:500}
+  .card-meta .meta-line strong{font-weight:700;color:var(--text-body)}
+  .card-meta.never strong{color:var(--text-meta);font-style:italic;font-weight:600}
+
+  .rbac-chip{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 8px;border-radius:10px;
+    font-size:10px;font-weight:700;
+    background:#f3f4f6;color:var(--text-meta);
+    border:1px solid var(--border);
+  }
+  .rbac-chip.allowed{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+  .rbac-chip.denied{background:#f3f4f6;color:var(--text-meta);border-color:var(--border)}
+  .rbac-chip.pending{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+  .rbac-chip i{font-size:11px}
+
+  /* Tooltip */
+  .tt-host{position:relative;display:inline-flex}
+  .tt{
+    position:fixed;
+    background:#1f2937;color:#fff;
+    padding:8px 12px;border-radius:6px;
+    font-size:11px;font-weight:500;line-height:1.45;
+    max-width:300px;white-space:normal;
+    box-shadow:0 8px 16px rgba(0,0,0,.18);
+    z-index:1000;pointer-events:none;
+    opacity:0;transition:opacity .15s;
+  }
+  .tt.show{opacity:1}
+  .tt strong{font-weight:700;color:#fff;display:block;margin-bottom:3px}
+  .tt code{
+    font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    font-size:10px;background:#374151;color:#e5e7eb;
+    padding:1px 5px;border-radius:3px;
+  }
+
+  /* ──── Modal ─────────────────────────────────────────────────────────── */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);
+    backdrop-filter:blur(4px);z-index:1000;
+    display:none;align-items:flex-start;justify-content:center;
+    padding:80px 20px 20px;
+  }
+  .modal-backdrop.open{display:flex}
+  .modal{
+    background:#fff;border-radius:12px;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,.25);
+    width:100%;max-width:580px;
+    display:flex;flex-direction:column;max-height:calc(100vh - 100px);
+    overflow:hidden;
+    animation:modalIn .25s ease-out;
+  }
+  @keyframes modalIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .modal-head{
+    padding:18px 24px;
+    border-bottom:1px solid var(--border-light);
+    flex-shrink:0;
+  }
+  .modal-head-top{display:flex;align-items:center;gap:10px}
+  .modal-title{font-size:15px;font-weight:700;color:var(--text-title);letter-spacing:-.01em;flex:1}
+  .modal-close{
+    border:0;background:transparent;cursor:pointer;color:#94a3b8;
+    display:grid;place-items:center;width:28px;height:28px;border-radius:6px;
+    transition:color .15s,background .15s;
+  }
+  .modal-close:hover{color:var(--red);background:var(--red-tint)}
+  .modal-close i{font-size:18px}
+  .modal-sub{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .col-granularity{
+    font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    font-size:11px;font-weight:600;color:var(--text-meta);
+    background:var(--page-bg);border:1px solid var(--border);
+    padding:3px 8px;border-radius:5px;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;
+  }
+  .badge.partial{background:var(--blue-bg);color:var(--blue)}
+  .badge.complete{background:var(--amber-bg);color:var(--amber)}
+  .badge.append{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+
+  .modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+  .modal-foot{
+    padding:14px 24px;border-top:1px solid var(--border-light);
+    display:flex;align-items:center;justify-content:flex-end;gap:10px;
+    flex-shrink:0;
+  }
+
+  /* Drop zone */
+  .dropzone{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:2px dashed #cbd5e1;border-radius:10px;
+    background:var(--page-bg);
+    padding:32px 20px;text-align:center;
+    cursor:pointer;transition:all .2s;
+  }
+  .dropzone:hover{border-color:var(--purple-primary);background:var(--purple-tertiary)}
+  .dropzone i.dl{font-size:32px;color:var(--grey-40);margin-bottom:10px;line-height:1}
+  .dropzone .dz-title{font-size:13px;font-weight:700;color:var(--text-title)}
+  .dropzone .dz-sub{font-size:11px;color:var(--text-meta);margin-top:4px}
+  .dz-tpl-unused{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:14px;padding:6px 12px;
+    background:#fff;border:1px solid var(--border);border-radius:6px;
+    font-size:11px;font-weight:600;color:var(--purple-primary);
+    cursor:pointer;transition:all .15s;
+  }
+  .dropzone .dz-tpl:hover{border-color:var(--purple-border);background:var(--purple-tertiary)}
+  .dropzone .dz-tpl i{font-size:13px}
+  .dz-tpl-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    margin:12px auto 0;padding:8px 12px;width:fit-content;
+    background:#fff;border:1px solid var(--border);border-radius:6px;
+    font-family:inherit;font-size:11px;font-weight:600;color:var(--purple-primary);
+    cursor:pointer;transition:all .15s;
+  }
+  .dz-tpl-btn:hover{border-color:var(--purple-border);background:var(--purple-tertiary)}
+  .dz-tpl-btn i{font-size:13px}
+
+  .file-pill{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 14px;border-radius:10px;
+    background:var(--green-tint);border:1px solid var(--green-border);
+  }
+  .file-pill.error{background:var(--red-tint);border-color:var(--red-border)}
+  .file-pill i.lead{font-size:22px;color:var(--green)}
+  .file-pill.error i.lead{color:var(--red)}
+  .file-pill-text{flex:1;min-width:0}
+  .file-pill-name{font-size:13px;font-weight:700;color:var(--text-title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .file-pill-meta{font-size:11px;color:var(--text-meta);font-weight:500;margin-top:2px}
+  .file-pill.error .file-pill-meta{color:var(--red)}
+  .file-pill-remove{
+    border:0;background:transparent;cursor:pointer;color:var(--text-meta);
+    width:24px;height:24px;border-radius:6px;display:grid;place-items:center;
+  }
+  .file-pill-remove:hover{color:var(--red);background:rgba(255,255,255,.5)}
+  .file-pill-remove i{font-size:16px}
+
+  .err-banner{
+    margin-top:12px;padding:12px 14px;
+    background:var(--red-tint);border:1px solid var(--red-border);
+    border-radius:8px;display:flex;gap:10px;align-items:flex-start;
+  }
+  .err-banner i.lead{font-size:16px;color:var(--red);margin-top:1px}
+  .err-banner-text{flex:1}
+  .err-banner-title{font-size:12px;font-weight:700;color:var(--red);margin-bottom:3px}
+  .err-banner-body{font-size:11px;color:var(--text-body);line-height:1.5}
+  .err-banner-btn{
+    margin-top:8px;
+    display:inline-flex;align-items:center;gap:6px;
+    padding:5px 10px;background:#fff;border:1px solid var(--red-border);
+    color:var(--red);font-size:11px;font-weight:700;
+    border-radius:6px;cursor:pointer;
+  }
+  .err-banner-btn:hover{background:var(--red-bg)}
+  .err-banner-btn i{font-size:12px}
+
+  .pre-submit-block{
+    margin-top:14px;padding:12px 14px;
+    background:var(--purple-tertiary);border:1px solid var(--purple-border);
+    border-radius:8px;
+  }
+  .pre-submit-title{font-size:12px;font-weight:700;color:var(--purple-primary);margin-bottom:4px}
+  .pre-submit-body{font-size:11px;color:var(--text-body);line-height:1.5}
+  .pre-submit-check{
+    display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;
+    font-size:12px;font-weight:600;color:var(--text-title);
+  }
+  .pre-submit-check input{accent-color:var(--purple-primary);width:14px;height:14px}
+
+  .drawer-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.4);
+    backdrop-filter:blur(2px);z-index:900;display:none;
+  }
+  .drawer-backdrop.open{display:block}
+  .drawer{
+    position:fixed;top:0;right:-560px;bottom:0;
+    width:560px;background:#fff;z-index:950;
+    box-shadow:-10px 0 30px rgba(0,0,0,.12);
+    display:flex;flex-direction:column;
+    transition:right .25s ease-out;
+  }
+  .drawer.open{right:0}
+  .drawer-head{
+    padding:18px 22px;border-bottom:1px solid var(--border-light);
+    display:flex;align-items:center;gap:10px;flex-shrink:0;
+  }
+  .drawer-title{font-size:15px;font-weight:700;color:var(--text-title);flex:1}
+  .drawer-sub{font-size:11px;color:var(--text-meta);font-weight:500;margin-top:2px}
+  .drawer-body{flex:1;overflow-y:auto;padding:8px 0}
+  .drawer-filters{
+    padding:12px 22px;border-bottom:1px solid var(--border-light);
+    display:flex;gap:8px;flex-wrap:wrap;background:var(--page-bg);
+  }
+  .filter-chip{
+    padding:4px 10px;border-radius:14px;
+    font-size:11px;font-weight:600;color:var(--text-meta);
+    background:#fff;border:1px solid var(--border);
+    cursor:pointer;transition:all .15s;
+  }
+  .filter-chip:hover{border-color:#94a3b8}
+  .filter-chip.active{
+    background:var(--purple-secondary);color:var(--purple-primary);
+    border-color:var(--purple-border);
+  }
+
+  .log-row{
+    padding:12px 22px;border-bottom:1px solid var(--border-light);
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .log-row:hover{background:var(--page-bg)}
+  .log-icon{
+    width:32px;height:32px;border-radius:50%;
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .log-icon.success{background:var(--green-tint);color:var(--green)}
+  .log-icon.error{background:var(--red-tint);color:var(--red)}
+  .log-icon i{font-size:16px}
+  .log-body{flex:1;min-width:0}
+  .log-line-1{font-size:12px;font-weight:600;color:var(--text-title);margin-bottom:2px}
+  .log-line-1 code{
+    font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    font-size:11px;background:var(--page-bg);
+    border:1px solid var(--border);padding:1px 6px;border-radius:4px;
+    color:var(--text-body);font-weight:600;
+  }
+  .log-line-2{font-size:11px;color:var(--text-meta);font-weight:500}
+  .log-line-2 strong{font-weight:700;color:var(--text-body)}
+  .log-actions{display:flex;gap:6px;flex-shrink:0}
+  .log-actions .btn-icon{width:28px;height:28px}
+  .log-actions .btn-icon i{font-size:14px}
+
+  /* Toast */
+  .toast-host{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:2000}
+  .toast{
+    background:#111827;color:#fff;
+    padding:12px 22px;border-radius:8px;
+    font-size:13px;font-weight:600;
+    box-shadow:0 10px 25px rgba(0,0,0,.3);
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:8px;
+    animation:toastIn .25s ease-out;
+  }
+  .toast.success{border-left:4px solid var(--green)}
+  .toast.error{border-left:4px solid var(--red)}
+  .toast i{font-size:16px}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Empty state */
+  .empty{
+    padding:60px 20px;text-align:center;color:var(--text-meta);
+  }
+  .empty i{font-size:40px;color:var(--grey-30);margin-bottom:10px}
+  .empty .e-title{font-size:14px;font-weight:700;color:var(--text-body)}
+  .empty .e-sub{font-size:12px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- ──── TopNav ───────────────────────────────────────────────────────── -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <div class="brand-mark">H</div>
+    <div class="brand-text">
+      <span class="brand-name">Horizon</span>
+      <span class="brand-sub">Backdoor</span>
+    </div>
+  </div>
+  <div class="topnav-right">
+    <button class="tools-btn" id="templatesBtn" title="Download blank templates per table">
+      <i class="ri-download-2-line"></i><span>Templates</span><i class="ri-arrow-down-s-line chev"></i>
+    </button>
+    <button class="avatar" title="Shashank">SR</button>
+  </div>
+</nav>
+
+<main>
+  <!-- ──── Subsection 1: Downstream demand tables ────────────────────── -->
+  <div class="subsection">
+    <div class="subsection-head">
+      <span class="subsection-label">Downstream demand tables</span>
+      <span class="subsection-divider"></span>
+    </div>
+
+    <!-- Card: dp_fulcrum -->
+    <div class="card" data-card="dp_fulcrum">
+      <div class="card-row">
+        <span class="status-dot authorised" data-tt="Authorised — you may patch this table"></span>
+        <div class="card-title-wrap">
+          <span class="card-title">Demand patch</span>
+          <span class="card-table-id">dp_fulcrum</span>
+          <button class="info-btn" data-tt="<strong>Final demand table</strong>Patch final demand consumed by Fulcrum (Buying &amp; IWT). Upload at <code>mpc × warehouse_id × date × is_retailer × source × flag × projection</code>. <code>date</code> accepts YYYY-MM (full month — fanned out across days) or YYYY-MM-DD (single day). Previous-month dates rejected; current-month past days allowed. Append-only — latest row by timestamp wins.">
+            <i class="ri-information-line"></i>
+          </button>
+        </div>
+        <span class="card-spacer"></span>
+        <div class="card-meta">
+          <span class="meta-line"><strong>2h ago</strong> · 24 rows</span>
+        </div>
+        <button class="btn btn-primary btn-sm" data-open-modal="dp_fulcrum">
+          <i class="ri-upload-2-line"></i>Upload patch
+        </button>
+      </div>
+    </div>
+
+    <!-- Card: dp_mdq -->
+    <div class="card" data-card="dp_mdq">
+      <div class="card-row">
+        <span class="status-dot authorised"></span>
+        <div class="card-title-wrap">
+          <span class="card-title">MDQ patch</span>
+          <span class="card-table-id">dp_mdq</span>
+          <button class="info-btn" data-tt="<strong>Minimum Display Quantity</strong>Patch MDQ at <code>mpc × warehouse_id</code>. Warehouse-level — source inferred from the warehouse master. Append-only — latest row by timestamp wins.">
+            <i class="ri-information-line"></i>
+          </button>
+        </div>
+        <span class="card-spacer"></span>
+        <div class="card-meta never">
+          <span class="meta-line"><strong>Never patched</strong></span>
+          <span class="meta-line">Last cycle push: 4d ago</span>
+        </div>
+        <button class="btn btn-primary btn-sm" data-open-modal="dp_mdq">
+          <i class="ri-upload-2-line"></i>Upload patch
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──── Subsection 2: Reference & master tables ───────────────────── -->
+  <div class="subsection">
+    <div class="subsection-head">
+      <span class="subsection-label">Reference &amp; master tables</span>
+      <span class="subsection-divider"></span>
+    </div>
+
+    <!-- Card: dp_class -->
+    <div class="card" data-card="dp_class">
+      <div class="card-row">
+        <span class="status-dot authorised"></span>
+        <div class="card-title-wrap">
+          <span class="card-title">Classification patch</span>
+          <span class="card-table-id">dp_class</span>
+          <button class="info-btn" data-tt="<strong>Classification labels</strong>Patch class labels at <code>warehouse_id × mpc × source</code>. Append-only — the latest row persists until manually changed or until the upstream classification job writes a newer row.">
+            <i class="ri-information-line"></i>
+          </button>
+        </div>
+        <span class="card-spacer"></span>
+        <div class="card-meta">
+          <span class="meta-line"><strong>1d ago</strong> · 312 rows</span>
+        </div>
+        <button class="btn btn-primary btn-sm" data-open-modal="dp_class">
+          <i class="ri-upload-2-line"></i>Upload patch
+        </button>
+      </div>
+    </div>
+
+    <!-- Card: assortment_patch -->
+    <div class="card" data-card="assortment_patch">
+      <div class="card-row">
+        <span class="status-dot authorised"></span>
+        <div class="card-title-wrap">
+          <span class="card-title">Assortment patch</span>
+          <span class="card-table-id">assortment_patch</span>
+          <button class="info-btn" data-tt="<strong>Assortment override</strong>Override <code>mpc × warehouse_id</code> assortment on top of the base master. Values: <code>1</code> Force Include (downstream adds the MPC to the warehouse&rsquo;s assortment), <code>0</code> Remove (downstream excludes it even if it is in the base assortment). Append-only — latest override wins.">
+            <i class="ri-information-line"></i>
+          </button>
+        </div>
+        <span class="card-spacer"></span>
+        <div class="card-meta never">
+          <span class="meta-line"><strong>Never patched</strong></span>
+        </div>
+        <button class="btn btn-primary btn-sm" data-open-modal="assortment_patch">
+          <i class="ri-upload-2-line"></i>Upload patch
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ──── Modal: Patch Upload ──────────────────────────────────────────── -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div class="modal-head-top">
+        <span class="modal-title" id="modalTitle">Patch dp_fulcrum</span>
+        <button class="modal-close" id="modalClose"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="modal-sub">
+        <span class="col-granularity" id="modalGranularity">mpc · warehouse_id · date · is_retailer · source · flag · projection</span>
+        <span class="badge append" id="modalMode">Fan-out: month → days (single-day pass-through) · Append-only</span>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Idle: dropzone -->
+      <div id="dzWrap">
+        <label class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".csv,.xlsx" style="display:none">
+          <i class="ri-upload-cloud-2-line dl"></i>
+          <div class="dz-title">Drag &amp; drop file here or browse</div>
+          <div class="dz-sub">Accepts .csv and .xlsx · Max 10 MB</div>
+        </label>
+        <button type="button" class="dz-tpl-btn" id="dzTpl"><i class="ri-download-2-line"></i>Don&rsquo;t have a file? Download the <span id="dzTplTable">dp_fulcrum</span> template</button>
+      </div>
+
+      <!-- File pill (post-parse) -->
+      <div class="file-pill" id="filePill" style="display:none">
+        <i class="ri-file-excel-2-line lead" id="filePillIcon"></i>
+        <div class="file-pill-text">
+          <div class="file-pill-name" id="filePillName">demand_patch_v3.xlsx</div>
+          <div class="file-pill-meta" id="filePillMeta">Parsed · 24 rows · all validations passed</div>
+        </div>
+        <button class="file-pill-remove" id="filePillRemove"><i class="ri-close-line"></i></button>
+      </div>
+
+      <!-- Error banner -->
+      <div class="err-banner" id="errBanner" style="display:none">
+        <i class="ri-error-warning-line lead"></i>
+        <div class="err-banner-text">
+          <div class="err-banner-title" id="errTitle">3 rows failed validation</div>
+          <div class="err-banner-body" id="errBody">
+            Download the annotated file, fix the highlighted rows offline, and re-upload. Nothing was written.
+          </div>
+          <button class="err-banner-btn" id="errDownloadBtn"><i class="ri-download-line"></i>Download annotated</button>
+        </div>
+      </div>
+
+      <!-- Pre-submit confirmation block -->
+      <div class="pre-submit-block" id="preSubmitBlock" style="display:none">
+        <div class="pre-submit-title">Confirm before submitting</div>
+        <div class="pre-submit-body" id="preSubmitBody">
+          This upload will be appended to <code>dp_fulcrum</code> as new rows — nothing is overwritten or deleted; downstream reads the latest row per key. Month-level rows fan out to one row per day. Logged against your admin identity and an Upload ID.
+        </div>
+        <label class="pre-submit-check">
+          <input type="checkbox" id="confirmCheck">
+          <span>I have reviewed the file. Proceed to write into <span id="confirmTable">dp_fulcrum</span>.</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="submitBtn" disabled>
+        <i class="ri-check-line"></i>Submit patch
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ──── Templates Popover ────────────────────────────────────────────── -->
+<div class="popover" id="templatesPopover" style="display:none">
+  <div class="popover-head">
+    <div class="popover-title">Backdoor templates</div>
+    <div class="popover-sub">Blank file with the required columns for each table.</div>
+  </div>
+  <div class="popover-all" id="tplAll">
+    <i class="ri-folder-zip-line lead"></i>
+    <div class="popover-all-text">
+      <strong>Download all (.zip)</strong>
+      <span>4 templates · ~8 KB</span>
+    </div>
+    <i class="ri-arrow-right-s-line lead"></i>
+  </div>
+  <div class="popover-divider"></div>
+  <div class="popover-list">
+    <div class="popover-item" data-template="dp_fulcrum">
+      <div class="popover-item-text">
+        <div class="popover-item-title">dp_fulcrum</div>
+        <div class="popover-item-meta">mpc · warehouse_id · date · is_retailer · source · flag · projection</div>
+      </div>
+      <i class="ri-download-2-line dl"></i>
+    </div>
+    <div class="popover-item" data-template="dp_mdq">
+      <div class="popover-item-text">
+        <div class="popover-item-title">dp_mdq</div>
+        <div class="popover-item-meta">mpc · warehouse_id · mdq</div>
+      </div>
+      <i class="ri-download-2-line dl"></i>
+    </div>
+    <div class="popover-item" data-template="dp_class">
+      <div class="popover-item-text">
+        <div class="popover-item-title">dp_class</div>
+        <div class="popover-item-meta">warehouse_id · mpc · source · class</div>
+      </div>
+      <i class="ri-download-2-line dl"></i>
+    </div>
+    <div class="popover-item" data-template="assortment_patch">
+      <div class="popover-item-text">
+        <div class="popover-item-title">assortment_patch</div>
+        <div class="popover-item-meta">mpc · warehouse_id · override</div>
+      </div>
+      <i class="ri-download-2-line dl"></i>
+    </div>
+  </div>
+</div>
+
+<div class="toast-host" id="toastHost"></div>
+
+<script>
+  // ──── Table config (per-card modal injection) ─────────────────────────
+  const TABLE_CFG = {
+    dp_fulcrum: {
+      title: 'Patch dp_fulcrum',
+      granularity: 'mpc · warehouse_id · date · is_retailer · source · flag · projection',
+      mode: 'Fan-out: month → days (single-day pass-through) · Append-only',
+      confirmBody: 'This upload will be appended to <code>dp_fulcrum</code> as new rows — nothing is overwritten or deleted; downstream reads the latest row per key. Month-level (<code>YYYY-MM</code>) rows fan out to one row per day; non-uploaded warehouses in the same scope are zeroed. Logged against your admin identity and an Upload ID.',
+      sampleRows: 24, sampleFile: 'demand_patch_v3.xlsx', valid: true,
+    },
+    dp_mdq: {
+      title: 'Patch dp_mdq',
+      granularity: 'mpc · warehouse_id · mdq',
+      mode: 'Append-only',
+      confirmBody: 'This upload will be appended to <code>dp_mdq</code> as new rows per (mpc, warehouse_id). The latest row by timestamp is the live MDQ downstream. Logged against your admin identity and an Upload ID.',
+      sampleRows: 12, sampleFile: 'mdq_w22.xlsx', valid: true,
+    },
+    dp_class: {
+      title: 'Patch dp_class',
+      granularity: 'warehouse_id · mpc · source · class',
+      mode: 'Append-only',
+      confirmBody: 'This upload will be appended to <code>dp_class</code> as new rows per (warehouse_id, mpc, source). The latest row persists until you append a newer one or the upstream classification job does. Logged against your admin identity and an Upload ID.',
+      sampleRows: 0, sampleFile: '', valid: true,
+    },
+    assortment_patch: {
+      title: 'Patch assortment_patch',
+      granularity: 'mpc · warehouse_id · override',
+      mode: 'Append-only · Override layer over base assortment',
+      confirmBody: 'This upload will be appended to <code>assortment_patch</code> as new override rows per (mpc, warehouse_id). <code>1</code> = Force Include, <code>0</code> = Remove; the latest override by timestamp is live downstream. Logged against your admin identity and an Upload ID.',
+      sampleRows: 16, sampleFile: 'assortment_override.csv', valid: true,
+    },
+  };
+
+  // ──── Modal handling ───────────────────────────────────────────────────
+  const backdrop = document.getElementById('modalBackdrop');
+  const titleEl = document.getElementById('modalTitle');
+  const granEl = document.getElementById('modalGranularity');
+  const modeEl = document.getElementById('modalMode');
+  const dzWrap = document.getElementById('dzWrap');
+  const filePill = document.getElementById('filePill');
+  const filePillName = document.getElementById('filePillName');
+  const filePillMeta = document.getElementById('filePillMeta');
+  const filePillIcon = document.getElementById('filePillIcon');
+  const errBanner = document.getElementById('errBanner');
+  const preSubmitBlock = document.getElementById('preSubmitBlock');
+  const preSubmitBody = document.getElementById('preSubmitBody');
+  const confirmTable = document.getElementById('confirmTable');
+  const confirmCheck = document.getElementById('confirmCheck');
+  const submitBtn = document.getElementById('submitBtn');
+  let activeTable = null;
+
+  function openModal(tableId){
+    const cfg = TABLE_CFG[tableId]; if(!cfg) return;
+    activeTable = tableId;
+    titleEl.textContent = cfg.title;
+    granEl.textContent = cfg.granularity;
+    modeEl.textContent = cfg.mode;
+    modeEl.className = 'badge ' + (cfg.mode.includes('Append') ? 'append' : 'partial');
+    resetModal();
+    dzTplTable.textContent = tableId;
+    backdrop.classList.add('open');
+  }
+  function closeModal(){
+    backdrop.classList.remove('open');
+    activeTable = null;
+    resetModal();
+  }
+  // ──── DOM refs for parse / validation UI ──────────────────────────────
+  const errTitle = document.getElementById('errTitle');
+  const errBody = document.getElementById('errBody');
+  const errDownloadBtn = document.getElementById('errDownloadBtn');
+  const dzTplTable = document.getElementById('dzTplTable');
+  let lastParse = null;
+
+  function resetModal(){
+    dzWrap.style.display = 'block';
+    filePill.style.display = 'none';
+    errBanner.style.display = 'none';
+    preSubmitBlock.style.display = 'none';
+    confirmCheck.checked = false;
+    submitBtn.disabled = true;
+    lastParse = null;
+    if(fileInput) fileInput.value = '';
+  }
+
+  // ──── Per-table schema + row validators ───────────────────────────────
+  const SCHEMA = {
+    dp_fulcrum: {
+      cols: ['mpc','warehouse_id','date','is_retailer','source','flag','projection'],
+      check: {
+        mpc: v => v ? null : 'mpc is required',
+        warehouse_id: v => v==='' ? 'warehouse_id is required' : (/^\d+$/.test(v) ? null : `warehouse_id '${v}' must be an integer`),
+        date: v => v==='' ? 'date is required' : (/^\d{4}-\d{2}(-\d{2})?$/.test(v) ? null : `date '${v}' must be YYYY-MM or YYYY-MM-DD`),
+        is_retailer: v => ['true','false','1','0'].includes(v.toLowerCase()) ? null : `is_retailer '${v}' is not boolean`,
+        source: v => v ? null : 'source is required',
+        flag: v => ['qty','drr'].includes(v.toLowerCase()) ? null : `flag '${v}' must be 'qty' or 'drr'`,
+        projection: v => { const n=Number(v); return (v!=='' && !isNaN(n) && n>=0) ? null : `projection '${v}' must be a non-negative number`; },
+      },
+    },
+    dp_mdq: {
+      cols: ['mpc','warehouse_id','mdq'],
+      check: {
+        mpc: v => v ? null : 'mpc is required',
+        warehouse_id: v => v==='' ? 'warehouse_id is required' : (/^\d+$/.test(v) ? null : `warehouse_id '${v}' must be an integer`),
+        mdq: v => { const n=Number(v); return (v!=='' && Number.isInteger(n) && n>=0 && n<=100) ? null : `mdq '${v}' must be an integer between 0 and 100`; },
+      },
+    },
+    dp_class: {
+      cols: ['warehouse_id','mpc','source','class'],
+      check: {
+        warehouse_id: v => v==='' ? 'warehouse_id is required' : (/^\d+$/.test(v) ? null : `warehouse_id '${v}' must be an integer`),
+        mpc: v => v ? null : 'mpc is required',
+        source: v => v ? null : 'source is required',
+        class: v => ['a+','a','b','c','d'].includes(v.toLowerCase()) ? null : `class '${v}' must be one of A+, A, B, C, D`,
+      },
+    },
+    assortment_patch: {
+      cols: ['mpc','warehouse_id','override'],
+      check: {
+        mpc: v => v ? null : 'mpc is required',
+        warehouse_id: v => v==='' ? 'warehouse_id is required' : (/^\d+$/.test(v) ? null : `warehouse_id '${v}' must be an integer`),
+        override: v => ['0','1'].includes(v) ? null : `override '${v}' is not accepted — use 1 (Force Include) or 0 (Remove)`,
+      },
+    },
+  };
+
+  // ──── CSV / XLSX parsing ──────────────────────────────────────────────
+  function parseCSV(text){
+    const rows=[]; let row=[], cur='', q=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(q){
+        if(c==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else q=false; }
+        else cur+=c;
+      } else {
+        if(c==='"') q=true;
+        else if(c===','){ row.push(cur); cur=''; }
+        else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+        else if(c!=='\r') cur+=c;
+      }
+    }
+    if(cur!=='' || row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+  async function readGrid(file){
+    const lower=(file.name||'').toLowerCase();
+    if(lower.endsWith('.csv')) return parseCSV(await file.text());
+    if(lower.endsWith('.xlsx')){
+      if(typeof XLSX==='undefined') throw new Error('xlsx-unavailable');
+      const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      return XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+    }
+    throw new Error('unsupported');
+  }
+
+  // ──── Validation ──────────────────────────────────────────────────────
+  function validateGrid(table, grid){
+    const schema=SCHEMA[table];
+    const clean=grid.filter(r=>Array.isArray(r) && r.some(c=>String(c).trim()!==''));
+    if(!clean.length) return {structural:'File is empty — nothing to upload.'};
+    const headers=clean[0].map(h=>String(h).trim());
+    const dataRows=clean.slice(1);
+    const missing=schema.cols.filter(c=>!headers.includes(c));
+    if(missing.length) return {structural:`Missing required column(s): ${missing.join(', ')}. Expected header: ${schema.cols.join(', ')}.`};
+    if(!dataRows.length) return {structural:'File has a header row but no data rows.'};
+    const idx={}; schema.cols.forEach(c=>idx[c]=headers.indexOf(c));
+    const errorRows=[];
+    dataRows.forEach((r,i)=>{
+      const errs=[];
+      schema.cols.forEach(col=>{
+        const v=(r[idx[col]]==null?'':String(r[idx[col]])).trim();
+        const e=schema.check[col](v);
+        if(e) errs.push(e);
+      });
+      if(errs.length) errorRows.push({rowNum:i+2, errors:errs});
+    });
+    return {headers, dataRows, idx, errorRows, total:dataRows.length};
+  }
+
+  // ──── File handling ───────────────────────────────────────────────────
+  function fileIcon(file){ return ((file.name||'').toLowerCase().endsWith('.csv') ? 'ri-file-text-line' : 'ri-file-excel-2-line') + ' lead'; }
+
+  async function handleFile(file){
+    if(!file || !activeTable) return;
+    if(file.size > 10*1024*1024){ showStructural(file,'File exceeds the 10 MB limit.'); return; }
+    let grid;
+    try{ grid=await readGrid(file); }
+    catch(err){
+      if(err.message==='xlsx-unavailable') toast('Could not load the .xlsx reader — please upload a .csv.','error');
+      else if(err.message==='unsupported') toast('Unsupported file type — upload .csv or .xlsx.','error');
+      else toast('Could not parse the file. Check it is a valid .csv or .xlsx.','error');
+      return;
+    }
+    const res=validateGrid(activeTable, grid);
+    if(res.structural){ showStructural(file, res.structural); return; }
+    lastParse={file, table:activeTable, headers:res.headers, dataRows:res.dataRows, idx:res.idx, errorRows:res.errorRows, validCount:res.total-res.errorRows.length, total:res.total};
+    if(res.errorRows.length) showInvalid(file,res);
+    else showValid(file,res);
+  }
+
+  function showValid(file,res){
+    dzWrap.style.display='none';
+    filePill.style.display='flex'; filePill.classList.remove('error');
+    filePillIcon.className=fileIcon(file);
+    filePillName.textContent=file.name;
+    const mpcs=new Set(), whs=new Set();
+    res.dataRows.forEach(r=>{ if(res.idx.mpc>-1) mpcs.add(String(r[res.idx.mpc]).trim()); if(res.idx.warehouse_id>-1) whs.add(String(r[res.idx.warehouse_id]).trim()); });
+    filePillMeta.textContent=`Parsed · ${res.total} rows · ${mpcs.size} MPC${mpcs.size!==1?'s':''} · ${whs.size} warehouse${whs.size!==1?'s':''} · all validations passed`;
+    errBanner.style.display='none';
+    preSubmitBlock.style.display='block';
+    preSubmitBody.innerHTML=TABLE_CFG[activeTable].confirmBody;
+    confirmTable.textContent=activeTable;
+    submitBtn.disabled=true; confirmCheck.checked=false;
+  }
+  function showInvalid(file,res){
+    dzWrap.style.display='none';
+    filePill.style.display='flex'; filePill.classList.add('error');
+    filePillIcon.className='ri-error-warning-line lead';
+    filePillName.textContent=file.name;
+    const failed=res.errorRows.length;
+    filePillMeta.textContent=`Parsed · ${res.total} rows · ${failed} failed validation`;
+    errBanner.style.display='flex';
+    errDownloadBtn.style.display='inline-flex';
+    errTitle.textContent=`${failed} row${failed!==1?'s':''} failed validation`;
+    const ex=res.errorRows.slice(0,3).map(er=>`Row ${er.rowNum}: ${er.errors[0]}`).join(' · ');
+    errBody.innerHTML=`Download the annotated file, fix the highlighted rows offline, and re-upload. Nothing was written.<br><span style="color:var(--text-meta)">${ex}${res.errorRows.length>3?' · …':''}</span>`;
+    preSubmitBlock.style.display='none';
+    submitBtn.disabled=true; confirmCheck.checked=false;
+    toast(`Upload failed — ${failed} row${failed!==1?'s':''} rejected. Nothing written to ${activeTable}.`,'error');
+  }
+  function showStructural(file,msg){
+    dzWrap.style.display='none';
+    filePill.style.display='flex'; filePill.classList.add('error');
+    filePillIcon.className='ri-error-warning-line lead';
+    filePillName.textContent=file?file.name:'—';
+    filePillMeta.textContent='Could not validate';
+    errBanner.style.display='flex';
+    errDownloadBtn.style.display='none';
+    errTitle.textContent='File rejected';
+    errBody.textContent=msg;
+    preSubmitBlock.style.display='none';
+    submitBtn.disabled=true; confirmCheck.checked=false;
+    lastParse=null;
+    toast('File rejected — '+msg,'error');
+  }
+
+  // ──── Download utilities ──────────────────────────────────────────────
+  function downloadBlob(blob,filename){
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },100);
+  }
+  function csvCell(s){ s=(s==null?'':String(s)); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+  function downloadTemplate(table){
+    downloadBlob(new Blob([SCHEMA[table].cols.join(',')+'\n'],{type:'text/csv'}), table+'_template.csv');
+    toast(`${table} template downloaded`,'success');
+  }
+  function buildAnnotated(){
+    if(!lastParse) return;
+    const {headers,dataRows,errorRows,file}=lastParse;
+    const errMap={}; errorRows.forEach(er=>errMap[er.rowNum]=er.errors.join('; '));
+    const lines=[headers.concat(['_validation_error']).map(csvCell).join(',')];
+    dataRows.forEach((r,i)=>{
+      const cells=headers.map((h,ci)=>csvCell(r[ci]));
+      cells.push(csvCell(errMap[i+2]||''));
+      lines.push(cells.join(','));
+    });
+    downloadBlob(new Blob([lines.join('\n')+'\n'],{type:'text/csv'}), (file.name||'upload').replace(/\.[^.]+$/,'')+'_annotated.csv');
+  }
+  // Minimal store-only ZIP for "Download all"
+  const CRC_TABLE=(()=>{ const t=[]; for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+  function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+  function zipStore(files){
+    const enc=new TextEncoder();
+    const u16=n=>[n&255,(n>>>8)&255], u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+    const parts=[], central=[]; let offset=0;
+    files.forEach(f=>{
+      const name=enc.encode(f.name), data=enc.encode(f.text), crc=crc32(data);
+      const local=new Uint8Array([].concat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0)));
+      parts.push(local,name,data);
+      central.push(new Uint8Array([].concat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset))), name);
+      offset += local.length+name.length+data.length;
+    });
+    let cs=0; central.forEach(c=>cs+=c.length);
+    const end=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cs),u32(offset),u16(0)));
+    return new Blob([...parts,...central,end],{type:'application/zip'});
+  }
+  function downloadAllTemplates(){
+    const files=Object.keys(SCHEMA).map(t=>({name:t+'_template.csv', text:SCHEMA[t].cols.join(',')+'\n'}));
+    downloadBlob(zipStore(files),'backdoor_templates.zip');
+    toast('All templates downloaded (.zip)','success');
+  }
+
+  document.querySelectorAll('[data-open-modal]').forEach(btn => {
+    btn.addEventListener('click', () => openModal(btn.getAttribute('data-open-modal')));
+  });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  backdrop.addEventListener('click', e => { if(e.target === backdrop) closeModal(); });
+  document.getElementById('filePillRemove').addEventListener('click', resetModal);
+
+  // Dropzone — real parse + validate on file pick / drop
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  fileInput.addEventListener('change', () => { if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+  ;['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => {
+    e.preventDefault(); dropzone.style.borderColor = 'var(--purple-primary)'; dropzone.style.background = 'var(--purple-tertiary)';
+  }));
+  ;['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
+    e.preventDefault(); dropzone.style.borderColor = ''; dropzone.style.background = '';
+    if(ev === 'drop' && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  }));
+
+  // In-modal template link + annotated-file download
+  document.getElementById('dzTpl').addEventListener('click', e => { e.preventDefault(); if(activeTable) downloadTemplate(activeTable); });
+  errDownloadBtn.addEventListener('click', buildAnnotated);
+
+  confirmCheck.addEventListener('change', () => {
+    submitBtn.disabled = !confirmCheck.checked;
+  });
+
+  submitBtn.addEventListener('click', () => {
+    const tbl = activeTable;
+    const n = lastParse ? lastParse.validCount : 0;
+    submitBtn.disabled = true; submitBtn.innerHTML = '<i class="ri-loader-4-line"></i>Submitting…';
+    setTimeout(() => {
+      closeModal();
+      submitBtn.innerHTML = '<i class="ri-check-line"></i>Submit patch';
+      toast(`Patch applied — ${n} rows written to ${tbl}`, 'success');
+    }, 700);
+  });
+
+  // ──── Templates popover ───────────────────────────────────────────────
+  const tplBtn = document.getElementById('templatesBtn');
+  const tplPop = document.getElementById('templatesPopover');
+  let tplOpen = false;
+  function positionPopover(){
+    const r = tplBtn.getBoundingClientRect();
+    tplPop.style.top = (r.bottom + 6) + 'px';
+    tplPop.style.right = (window.innerWidth - r.right) + 'px';
+  }
+  tplBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    tplOpen = !tplOpen;
+    tplPop.style.display = tplOpen ? 'block' : 'none';
+    if(tplOpen) positionPopover();
+  });
+  document.addEventListener('click', e => {
+    if(tplOpen && !tplPop.contains(e.target) && e.target !== tplBtn){
+      tplOpen = false; tplPop.style.display = 'none';
+    }
+  });
+  window.addEventListener('resize', () => { if(tplOpen) positionPopover(); });
+
+  // Template downloads from the popover
+  document.querySelectorAll('#templatesPopover .popover-item[data-template]').forEach(item => {
+    item.addEventListener('click', () => {
+      downloadTemplate(item.getAttribute('data-template'));
+      tplOpen = false; tplPop.style.display = 'none';
+    });
+  });
+  document.getElementById('tplAll').addEventListener('click', () => {
+    downloadAllTemplates();
+    tplOpen = false; tplPop.style.display = 'none';
+  });
+
+  // ──── Escape to close modal ───────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && backdrop.classList.contains('open')) closeModal();
+  });
+
+  // ──── Tooltips ────────────────────────────────────────────────────────
+  let ttEl = null, ttTimer = null;
+  function showTooltip(el, content){
+    if(ttEl) ttEl.remove();
+    ttEl = document.createElement('div'); ttEl.className = 'tt';
+    ttEl.innerHTML = content;
+    document.body.appendChild(ttEl);
+    const r = el.getBoundingClientRect();
+    const tr = ttEl.getBoundingClientRect();
+    let left = r.left + r.width/2 - tr.width/2;
+    let top = r.top - tr.height - 8;
+    if(top < 8) top = r.bottom + 8;
+    if(left < 8) left = 8;
+    if(left + tr.width > window.innerWidth - 8) left = window.innerWidth - tr.width - 8;
+    ttEl.style.left = left + 'px';
+    ttEl.style.top = top + 'px';
+    requestAnimationFrame(() => ttEl.classList.add('show'));
+  }
+  function hideTooltip(){
+    if(ttEl){ ttEl.remove(); ttEl = null; }
+    if(ttTimer){ clearTimeout(ttTimer); ttTimer = null; }
+  }
+  document.querySelectorAll('[data-tt]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ttTimer = setTimeout(() => showTooltip(el, el.getAttribute('data-tt')), 200);
+    });
+    el.addEventListener('mouseleave', hideTooltip);
+  });
+
+  // ──── Toast ───────────────────────────────────────────────────────────
+  function toast(msg, type='success'){
+    const host = document.getElementById('toastHost');
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.innerHTML = `<i class="ri-${type==='success'?'checkbox-circle-line':'error-warning-line'}"></i>${msg}`;
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+</script>
+</body>
+</html>
